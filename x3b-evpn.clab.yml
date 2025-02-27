@@ -1,0 +1,51 @@
+name: x3b_evpn
+
+
+topology:
+  defaults:
+    kind: vr-sros
+    
+  kinds:
+    vr-sros:
+      image: vr-sros:24.7.R1
+      license: /opt/srexperts/license-sros24.txt
+    srl:
+      image: ghcr.io/nokia/srlinux:24.10.1
+      license: /opt/srexperts/license-srlinux24.txt
+  
+  nodes:
+    leaf1:
+      type: ixr-s
+      startup-config: evpn_configs/leaf1.txt
+    leaf2:
+      type: ixr-s
+      startup-config: evpn_configs/leaf2.txt
+    spine1:
+      kind: srl
+      type: ixrx3b
+      startup-config: evpn_configs/spine1.json
+    spine2:
+      kind: srl
+      type: ixrx3b
+      startup-config: evpn_configs/spine2.json
+    host1:
+      kind: linux
+      image: ghcr.io/srl-labs/network-multitool
+      binds:
+        - host1.sh:/host1.sh
+      exec: 
+        - bash /host1.sh
+    host2:
+      kind: linux
+      image: ghcr.io/srl-labs/network-multitool
+      binds:
+        - host2.sh:/host2.sh
+      exec: 
+        - bash /host2.sh
+   
+  links:
+    - endpoints: ["leaf1:eth2", "spine1:e1-2"]
+    - endpoints: ["spine1:e1-1", "spine2:e1-1"]
+    - endpoints: ["leaf2:eth2", "spine2:e1-2"]
+    - endpoints: ["leaf1:eth4", "host1:eth1"]
+    - endpoints: ["leaf2:eth4", "host2:eth1"] 
